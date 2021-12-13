@@ -46,7 +46,7 @@ class GUI:
     turn = False
 
     def __init__(self, master):
-        self.board = [[-1]*self.numOfCols for i in range(self.numOfRows)]
+        self.board = '2'*(self.numOfRows * self.numOfCols) #[[-1]*self.numOfCols for i in range(self.numOfRows)]
         
         self.master = master  # the root object.
         master.title("Connect four")
@@ -82,7 +82,15 @@ class GUI:
             gameAlgorithm.game(self.numOfRows, self.numOfCols, self.board)
             return
         self.putCircle(desiredRow, clickedCol, self.colors[self.turn])
-        self.board[desiredRow][clickedCol] = self.turn
+        indx = desiredRow * self.numOfRows + clickedCol % self.numOfCols
+        print(self.board)
+        print(len(self.board))
+        print(indx)
+        print(len(self.board))
+        if (self.turn):
+            self.board = self.board[:indx] + "1" + self.board[indx+1:]
+        else: self.board = self.board[:indx] + "0" + self.board[indx+1:]
+        print(self.board[indx])
         self.turn = not self.turn
         self.lastRow[clickedCol] += 1
         
