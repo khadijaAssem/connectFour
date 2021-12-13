@@ -83,14 +83,9 @@ class GUI:
             return
         self.putCircle(desiredRow, clickedCol, self.colors[self.turn])
         indx = desiredRow * self.numOfRows + clickedCol % self.numOfCols
-        print(self.board)
-        print(len(self.board))
-        print(indx)
-        print(len(self.board))
         if (self.turn):
             self.board = self.board[:indx] + "1" + self.board[indx+1:]
         else: self.board = self.board[:indx] + "0" + self.board[indx+1:]
-        print(self.board[indx])
         self.turn = not self.turn
         self.lastRow[clickedCol] += 1
         

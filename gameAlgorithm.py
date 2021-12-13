@@ -17,21 +17,22 @@ class game:
         self.board = board
         self.numOfCols = numOfCols
         self.numOfRows = numOfRows
-        print(self.countScore('0'))
+        totalScore = self.countScore('0') 
         self.greenScore = self.score
         self.score = 0
-        print(self.countScore('1'))
+        totalScore += self.countScore('1')
         self.redScore = self.score
         self.score = 0
-        return
+        print(totalScore)
+        return #totalScore
     
     def countScore(self, turn):
         # # horizontalCheck 
         for row in range (0, self.numOfRows):
             for col in range (0, self.numOfCols-3):
-                print(str(row) + ' ' + str(col) + ' ' , end ='')
-                indx = row * self.numOfRows + col % self.numOfCols
-                print(self.board[indx])
+                # print(str(row) + ' ' + str(col) + ' ' , end ='')
+                # indx = row * self.numOfRows + col % self.numOfCols
+                # print(self.board[indx])
                 self.score += self.countConsecutive(row, col, 0, 1, turn)
 
         # verticalCheck
@@ -57,12 +58,8 @@ class game:
         for i in range(4):
             indx = row * self.numOfRows + col % self.numOfCols
             if(self.board[indx] != turn):
-                return countScore * countScore
+                return countScore * countScore # 0
             countScore += 1
             row += deltaRow
             col += deltaCol
-        return countScore * countScore
-
-    def check(self, turn):
-        if (turn == 0):
-            return
+        return 1 * self.score #countScore * countScore
