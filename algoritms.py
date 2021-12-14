@@ -38,7 +38,7 @@ class Minimax_Class:
                         new_state= self.replace_char_at_index(new_state, j*self.num_col + i, self.agent)
                     else:
                         new_state= self.replace_char_at_index(new_state, j*self.num_col + i, self.opponent)
-                    children_list.append(new_state)
+                    children_list.append((new_state,(j,i)))
                     # self.printer(new_state)
                     break
         # print(children_list)
@@ -88,47 +88,41 @@ class Minimax_Class:
 
 
 
-
-
-
     # is_max : alternate between max & min levels.
     # current_depth : indicate which level we are in in each point.
 
-    def minimax (self, current_depth, nodeIndex, is_max, states, k_levels,num_node_prev_level):
-
+    def minimax (self, current_depth, nodeIndex, is_max, states, k_levels):
         # base case : targetDepth reached
         if (current_depth == k_levels):  # call Heuristic
-            self.printer(states[nodeIndex])
-            return self.evaluate(states[nodeIndex])#states[nodeIndex]
-
+            self.printer(states[nodeIndex][0])
+            return self.evaluate(states[nodeIndex][0]),-1,-1 #states[nodeIndex]
         if (is_max):
             result_max = -10000
-            new_list =self.expand_children(states[nodeIndex], True)
+            new_list =self.expand_children(states[nodeIndex][0], True)
             num_node_prev_level = len(states)
             states.extend(new_list)
-            #print(states)
-            # return max(self.minimax(current_depth + 1, nodeIndex * self.num_col, False, states, k_levels),
-            #            self.minimax(current_depth + 1, nodeIndex * self.num_col + 1, False, states, k_levels))
             for element in range(len(new_list)):
                 x = num_node_prev_level + element
-                result_max = max(result_max, self.minimax(current_depth + 1, x, False, states, k_levels, num_node_prev_level))
-                # return self.min_value
-            return result_max
+                temp_max,w,z = self.minimax(current_depth + 1, x, False, states, k_levels)
+                if temp_max > result_max:
+                    result_max = max(result_max, temp_max)
+                    i,j = states[x][1]
+            return result_max,i,j
         else:
             result_min = 10000
-            new_list = self.expand_children(states[nodeIndex], False)
+            new_list = self.expand_children(states[nodeIndex][0], False)
             num_node_prev_level = len(states)
             states.extend(new_list)
-            # print(states)
-
-            # return min(self.minimax(current_depth + 1, nodeIndex * self.num_col, True, states, k_levels),
-            #            self.minimax(current_depth + 1, nodeIndex * self.num_col + 1, True, states, k_levels))
             for element in range(len(new_list)):
                 x = num_node_prev_level + element
-                result_min = min(result_min, self.minimax(current_depth + 1, x, True, states, k_levels, num_node_prev_level))
-                # return self.max_value
-            return result_min
+                temp_min,w,z = self.minimax(current_depth + 1, x, True, states, k_levels)
+                if temp_min < result_min:
+                    result_min = min(result_min, temp_min)
+                    i,j = states[x][1]
+            return result_min,i,j
 
 temp = Minimax_Class(3,3)
 # temp.expand_children("000002121",True)
-print(temp.minimax(0,0,True,["000121221"],4,1))
+# y =[("000212112",(-1,-1))]
+# print(y[0][1][0])
+print(temp.minimax(0,0,True,[("001022211,",(-1,-1))],3)) #"020011122"  #"002011122" #001022211  #001021022
