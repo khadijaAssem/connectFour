@@ -1,4 +1,4 @@
-from tree import plot
+import tree
 from gameAlgorithm import game
 
 
@@ -43,10 +43,10 @@ class Minimax_Class:
                 new_state = state[:]
                 if (is_agent):  # in this step agent is play.
                     new_state = self.replace_char_at_index(new_state, j*self.num_col + i, self.agent)
-                    lastRow = lastRow[0:i] + str(int(lastRow[i]) + 1) + lastRow[i + 1:] 
+                    lastRow = lastRow[0:i] + str(int(lastRow[i]) + 1) + lastRow[i + 1:]
                 else:
                     new_state = self.replace_char_at_index(new_state, j*self.num_col + i, self.opponent)
-                    lastRow = lastRow[0:i] + str(int(lastRow[i]) + 1) + lastRow[i + 1:] 
+                    lastRow = lastRow[0:i] + str(int(lastRow[i]) + 1) + lastRow[i + 1:]
                 children_list.append((new_state,(j,i),lastRow))
         return children_list
 
@@ -60,6 +60,12 @@ class Minimax_Class:
     def getStep(self, states):
         res, row, col = self.minimax(0, 0, True, states, self.k_levels, {})
         return row, col
+
+    def split_to_line(self, state):
+        new_key = state
+        for i in range(self.num_row):
+            new_key = new_key[:((i+1)*self.num_col+i)] + "\n" + new_key[((i+1)*self.num_col+i):]
+        return new_key
 
     # is_max : alternate between max & min levels.
     # current_depth : indicate which level we are in in each point.
@@ -78,7 +84,8 @@ class Minimax_Class:
             result_max = -10000
             new_list = self.expand_children(states[nodeIndex][0], states[nodeIndex][2], True)
 
-            tree[states[nodeIndex][0]] = [i[0] for i in new_list]
+            tree[self.split_to_line(states[nodeIndex][0])] = [self.split_to_line(i[0]) for i in new_list]#tree[states[nodeIndex][0]] = [i[0] for i in new_list]
+
             num_node_prev_level = len(states)
             states.extend(new_list)
             for element in range(len(new_list)):
@@ -96,7 +103,9 @@ class Minimax_Class:
         else:
             result_min = 10000
             new_list = self.expand_children(states[nodeIndex][0], states[nodeIndex][2], False)
-            tree[states[nodeIndex][0]] = [i[0] for i in new_list]
+
+            tree[self.split_to_line(states[nodeIndex][0])] = [self.split_to_line(i[0]) for i in new_list]
+
             num_node_prev_level = len(states)
             states.extend(new_list)
 
@@ -112,3 +121,17 @@ class Minimax_Class:
                     break
 
             return result_min,i,j
+
+
+
+
+
+# temp = Minimax_Class(3,3,3,'1','2',0)
+# # temp.expand_children("000002121",True)
+# # y =[("000212112",(-1,-1))]
+# # print(y[0][1][0])
+# tree1 = {}
+# print(temp.minimax(0,0,True,[("001022211",(-1,-1))],3, tree1)) #"020011122"  #"002011122" #001022211  #001021022
+# # print(temp.split_to_line("111222333444555"))
+# object_plot = tree.plot()
+# object_plot.set_tree(tree1)
