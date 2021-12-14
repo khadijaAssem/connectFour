@@ -53,7 +53,11 @@ class GUI:
     # 0 for human(red) 1 for computer(green)
     turn = True
 
-    def __init__(self, master):
+    def __init__(self, master, numOfRows, numOfCols, k_levels, withPruning):
+        self.numOfRows = numOfRows
+        self.numOfCols = numOfCols
+        self.k_levels = k_levels
+        self.withPruning = withPruning
         self.board = self.defaultSign*(self.numOfRows * self.numOfCols) #[[-1]*self.numOfCols for i in range(self.numOfRows)]
         
         self.master = master  # the root object.
@@ -63,7 +67,7 @@ class GUI:
         self.canvas.pack(fill=tk.BOTH, expand=True)
         self.canvas.bind('<Configure>', self.create_grid)
         self.heuristic = gameAlgorithm.game(self.numOfRows, self.numOfCols, self.oponentSign, self.agentSign, self.defaultSign)
-        self.miniMax = algorithms.Minimax_Class(self.numOfRows, self.numOfCols, 5, self.oponentSign, self.agentSign, self.defaultSign)
+        self.miniMax = algorithms.Minimax_Class(self.numOfRows, self.numOfCols, k_levels, self.oponentSign, self.agentSign, self.defaultSign)
     
     def allBlack(self, event=None):
         if (len(self.canvas.find_withtag("circles")) != 0):
