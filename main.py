@@ -4,6 +4,7 @@ from tkinter import ttk
 from PIL import ImageTk, Image
 import tkinter.messagebox
 import gameAlgorithm
+import algorithms
 
 import numpy as np
 import time
@@ -33,20 +34,27 @@ class GUI:
     blackColor = "#000000"
     redColor = "Red"
     greenColor = "Green"
-    numOfRows = 6
-    numOfCols = 7
-    humanColor = greenColor
-    colors = [greenColor, redColor]
+
     canvasWidth = 570
     canvasHeight = 500
     wScale = 1
     hScale = 1
-    lastRow = [0]*numOfCols
+
+    numOfRows = 6
+    numOfCols = 7
+    lastRow = '0'*numOfCols
+
+    oponentSign = '1'
+    agentSign = '0'
+    defaultSign = '2'
+    signs = {True: '1', False: '0'}
+    colors = {True: greenColor, False: redColor}
+    
     # 0 for human(red) 1 for computer(green)
-    turn = False
+    turn = True
 
     def __init__(self, master):
-        self.board = '2'*(self.numOfRows * self.numOfCols) #[[-1]*self.numOfCols for i in range(self.numOfRows)]
+        self.board = self.defaultSign*(self.numOfRows * self.numOfCols) #[[-1]*self.numOfCols for i in range(self.numOfRows)]
         
         self.master = master  # the root object.
         master.title("Connect four")
@@ -54,6 +62,8 @@ class GUI:
         self.canvas.bind("<Button-1>", self.callback)
         self.canvas.pack(fill=tk.BOTH, expand=True)
         self.canvas.bind('<Configure>', self.create_grid)
+        self.heuristic = gameAlgorithm.game(self.numOfRows, self.numOfCols, self.oponentSign, self.agentSign, self.defaultSign)
+        self.miniMax = algorithms.Minimax_Class(self.numOfRows, self.numOfCols, 5, self.oponentSign, self.agentSign, self.defaultSign)
     
     def allBlack(self, event=None):
         if (len(self.canvas.find_withtag("circles")) != 0):
@@ -77,17 +87,25 @@ class GUI:
     def callback(self, event):
         # clickedRow = abs((event.y // (self.canvasHeight // self.numOfRows)))
         clickedCol = event.x // (self.canvasWidth // self.numOfCols)
-        desiredRow = abs(self.lastRow[clickedCol]-5)
-        if (self.lastRow[clickedCol] == self.numOfRows):
-            gameAlgorithm.game(self.numOfRows, self.numOfCols, self.board)
-            return
-        self.putCircle(desiredRow, clickedCol, self.colors[self.turn])
-        indx = desiredRow * self.numOfRows + clickedCol % self.numOfCols
+        desiredRow = abs(int(self.lastRow[clickedCol])-self.numOfRows+1)
         if (self.turn):
-            self.board = self.board[:indx] + "1" + self.board[indx+1:]
-        else: self.board = self.board[:indx] + "0" + self.board[indx+1:]
-        self.turn = not self.turn
-        self.lastRow[clickedCol] += 1
+            if (self.playStep(desiredRow ,clickedCol)):
+                # self.heuristic.getHeuristic(self.board, not self.turn)
+                # return
+                row, col = self.miniMax.getStep([(self.board, (-1, -1), self.lastRow)])
+                self.playStep(row, col)
+
+
+    def playStep(self, row, col):
+        if (int(self.lastRow[col]) == self.numOfRows):
+            print(self.heuristic.getScore(self.board))
+            return False
+        self.putCircle(row, col, self.colors[self.turn]) # put elzorar fl GUI
+        indx = row * self.numOfCols + col # calculate index in string
+        self.board = self.board[:indx] + self.signs[self.turn] + self.board[indx+1:] # do actual change in string
+        self.turn = not self.turn # switch turn
+        self.lastRow = self.lastRow[0:col] + str(int(self.lastRow[col]) + 1) + self.lastRow[col + 1:] # update last available row in column
+        return True
         
     def create_grid(self, event=None):
         self.wScale = event.width/self.canvasWidth # Get width scalling ratio
