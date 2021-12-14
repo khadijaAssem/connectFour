@@ -9,12 +9,20 @@ from tkinter import *
 from tkinter import ttk
 class plot:
 	my_tree = {}
-	def set_tree( tree):
+
+	def __init__(self, num_row=3, num_col=3):
+		# assume index from 0 to < n.
+		self.num_row = num_row
+		self.num_col = num_col
+		return
+	def set_tree(self, tree):
 		# Creating app window
 		app = Tk()
-
+		# set the row height in tkinter treeview
+		s = ttk.Style()
+		s.configure('Treeview', rowheight=(15*self.num_row))
 		# Defining title of the app
-		app.title("GUI Application of Python")
+		app.title("Minimax Trace")
 
 		# Defining label of the app and calling a geometry
 		# management method i.e, pack in order to organize
@@ -36,7 +44,7 @@ class plot:
 		for i in range(len(keys_list)):
 			key = keys_list[i]
 			for j in range (len(tree[key])):
-				treeview.insert(str(key), j, tree[key][j], text=tree[key][j])
+				treeview.insert(str(key), j, tree[key][j], text=tree[key][j])#treeview.insert(str(key), j, tree[key][j], text=tree[key][j])
 
 		# Calling main()
 		app.mainloop()
