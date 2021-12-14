@@ -1,18 +1,22 @@
 from tree import plot
+from gameAlgorithm import game
 
 
 class Minimax_Class:
 
-    def __init__(self, num_row, num_col ):
+    def __init__(self, num_row, num_col, k_levels, opponent, agent, default):
         # assume index from 0 to < n.
         self.num_row = num_row
         self.num_col = num_col
-        self.opponent = '2'
-        self.agent = '1'
+        self.opponent = opponent #'2'
+        self.agent = agent #'1'
+        self.default = default
         self.max_value = 10000
         self.min_value = -10000
         self.alpha = -10000
         self.beta = 10000
+        self.k_levels = k_levels
+        self.evaluation = game(num_row, num_col, opponent, agent, default)
         return
 
     def replace_char_at_index(self, org_str, index, replacement):
@@ -27,70 +31,35 @@ class Minimax_Class:
         for i in range (self.num_row):
             temp = ""
             for j in range(self.num_col):
-                temp +=state[j+i*self.num_col]
+                temp += state[j+i*self.num_col]
             print(temp)
         print("\n")
 
-    def expand_children(self, state, is_agent):
+    def expand_children(self, state, lastRow, is_agent):
         children_list = []
         for i in range((self.num_col - 1), -1, -1):
-            for j in range((self.num_row - 1), -1, -1):
-                if(state[j*self.num_col + i] == '0'):
-                    #print(state[j*self.num_col + i])
-                    new_state = state[:]
-                    if (is_agent):  # in this step agent is play.
-                        new_state= self.replace_char_at_index(new_state, j*self.num_col + i, self.agent)
-                    else:
-                        new_state= self.replace_char_at_index(new_state, j*self.num_col + i, self.opponent)
-                    children_list.append((new_state,(j,i)))
-                    # self.printer(new_state)
-                    break
-        # print(children_list)
+            j = abs(int(lastRow[i]) - self.num_row + 1)
+            if(j < self.num_row and state[j*self.num_col + i] == self.default):
+                new_state = state[:]
+                if (is_agent):  # in this step agent is play.
+                    new_state = self.replace_char_at_index(new_state, j*self.num_col + i, self.agent)
+                    lastRow = lastRow[0:i] + str(int(lastRow[i]) + 1) + lastRow[i + 1:] 
+                else:
+                    new_state = self.replace_char_at_index(new_state, j*self.num_col + i, self.opponent)
+                    lastRow = lastRow[0:i] + str(int(lastRow[i]) + 1) + lastRow[i + 1:] 
+                children_list.append((new_state,(j,i),lastRow))
         return children_list
 
+    def evaluate(self, state, turn):
+        # print(turn ,end = ' ')
+        # self.printer(state)
+        fn = self.evaluation.getHeuristic(state ,turn)
+        # print(fn)
+        return fn
 
-
-
-    def evaluate(self, b):
-
-        # Checking for Rows for X or O victory.
-        for row in range(3):
-            if (b[row*3+0] == b[row*3+1] and b[row*3+1] == b[row*3+2]):
-                if (b[row*3+0] == self.agent):
-                    return 10
-                elif (b[row*3+0] == self.opponent):
-                    return -10
-
-        # Checking for Columns for X or O victory.
-        for col in range(3):
-
-            if (b[0*3+col] == b[1*3+col] and b[1*3+col] == b[2*3+col]):
-
-                if (b[0*3+col] == self.agent):
-                    return 10
-                elif (b[0*3+col] == self.opponent):
-                    return -10
-
-        # Checking for Diagonals for X or O victory.
-        if (b[0] == b[4] and b[4] == b[7]):
-
-            if (b[0] == self.agent):
-                return 10
-            elif (b[0] == self.opponent):
-                return -10
-
-        if (b[6] == b[4] and b[4] == b[2]):
-
-            if (b[2] == self.agent):
-                return 10
-            elif (b[2] == self.opponent):
-                return -10
-
-        # Else if none of them have won then return 0
-        return 0
-
-
-
+    def getStep(self, states):
+        res, row, col = self.minimax(0, 0, True, states, self.k_levels, {})
+        return row, col
 
     # is_max : alternate between max & min levels.
     # current_depth : indicate which level we are in in each point.
@@ -102,16 +71,16 @@ class Minimax_Class:
             beta = self.beta
         # base case : targetDepth reached
         if (current_depth == k_levels):  # call Heuristic
-            self.printer(states[nodeIndex][0])
-            return self.evaluate(states[nodeIndex][0]),-1,-1 #states[nodeIndex]
+            return self.evaluate(states[nodeIndex][0], is_max),-1,-1 #states[nodeIndex] Call heuristic with state states[nodeIndex][0]
+        i = j = 0
+
         if (is_max):
             result_max = -10000
-            new_list =self.expand_children(states[nodeIndex][0], True)
+            new_list = self.expand_children(states[nodeIndex][0], states[nodeIndex][2], True)
 
             tree[states[nodeIndex][0]] = [i[0] for i in new_list]
             num_node_prev_level = len(states)
             states.extend(new_list)
-
             for element in range(len(new_list)):
                 x = num_node_prev_level + element
                 temp_max,w,z = self.minimax(current_depth + 1, x, False, states, k_levels, tree, alpha, beta)
@@ -121,15 +90,16 @@ class Minimax_Class:
 
                     alpha = max(temp_max, alpha)
                     if alpha >= beta:
-                        break;
+                        break
 
             return result_max,i,j
         else:
             result_min = 10000
-            new_list = self.expand_children(states[nodeIndex][0], False)
+            new_list = self.expand_children(states[nodeIndex][0], states[nodeIndex][2], False)
             tree[states[nodeIndex][0]] = [i[0] for i in new_list]
             num_node_prev_level = len(states)
             states.extend(new_list)
+
             for element in range(len(new_list)):
                 x = num_node_prev_level + element
                 temp_min,w,z = self.minimax(current_depth + 1, x, True, states, k_levels, tree, alpha, beta)
@@ -139,15 +109,6 @@ class Minimax_Class:
 
                 beta = min(temp_min, beta)
                 if alpha >= beta:
-                    break;
+                    break
 
             return result_min,i,j
-
-temp = Minimax_Class(3,3)
-# temp.expand_children("000002121",True)
-# y =[("000212112",(-1,-1))]
-# print(y[0][1][0])
-tree = {}
-print(temp.minimax(0,0,True,[("001022211",(-1,-1))],3, tree)) #"020011122"  #"002011122" #001022211  #001021022
-
-#plot.set_tree(tree)
