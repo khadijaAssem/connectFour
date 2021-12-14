@@ -130,6 +130,6 @@ class GUI:
         # Put all places empty blacks
         self.allBlack()
 
-root = Tk()
-gui = GUI(root)
-root.mainloop()
+# root = Tk()
+# gui = GUI(root)
+# root.mainloop()
