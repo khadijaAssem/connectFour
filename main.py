@@ -3,15 +3,14 @@ import tkinter as tk
 from tkinter import ttk
 from PIL import ImageTk, Image
 import tkinter.messagebox
-import time
 import gameAlgorithm
 import algorithms
-
 
 import numpy as np
 import time
 
-  # self.gameboard_pl(master)
+
+# self.gameboard_pl(master)
 
 # self.img = ImageTk.PhotoImage(Image.open("blackCircle.jpg"))  # PIL solution
 # canvas.create_image(20,20, anchor=NW, image=self.img)  
@@ -30,7 +29,6 @@ import time
 # img.place(x=350, y=300, width=80)
 
 class GUI:
-
     backgroundColor = "#051094"
     whiteColor = "#FFFFFF"
     blackColor = "#000000"
@@ -44,14 +42,14 @@ class GUI:
 
     numOfRows = 6
     numOfCols = 7
-    lastRow = '0'*numOfCols
+    lastRow = '0' * numOfCols
 
     oponentSign = '1'
     agentSign = '0'
     defaultSign = '2'
     signs = {True: '1', False: '0'}
     colors = {True: greenColor, False: redColor}
-    
+
     # 0 for human(red) 1 for computer(green)
     turn = True
 
@@ -60,89 +58,85 @@ class GUI:
         self.numOfCols = numOfCols
         self.k_levels = k_levels
         self.withPruning = withPruning
-        self.full = str(numOfRows)*numOfCols
-        self.board = self.defaultSign*(self.numOfRows * self.numOfCols) #[[-1]*self.numOfCols for i in range(self.numOfRows)]
-        self.elapsedTime = 0
-        self.expandedNodes = 0
+        self.board = self.defaultSign * (
+                    self.numOfRows * self.numOfCols)  # [[-1]*self.numOfCols for i in range(self.numOfRows)]
+
         self.master = master  # the root object.
         master.title("Connect four")
-        self.canvas = Canvas(master, width=self.canvasWidth, height=self.canvasHeight, background=self.backgroundColor, highlightthickness=0)
+        self.canvas = Canvas(master, width=self.canvasWidth, height=self.canvasHeight, background=self.backgroundColor,
+                             highlightthickness=0)
         self.canvas.bind("<Button-1>", self.callback)
         self.canvas.pack(fill=tk.BOTH, expand=True)
+        self.lbl1 = Label(master, text='Score')  # , command=self.start)
+        self.lbl2 = Label(master, text='')
+        self.lbl1.pack()
+        self.lbl2.pack()
         self.canvas.bind('<Configure>', self.create_grid)
-        self.heuristic = gameAlgorithm.game(self.numOfRows, self.numOfCols, self.oponentSign, self.agentSign, self.defaultSign)
-        self.miniMax = algorithms.Minimax_Class(self.numOfRows, self.numOfCols, k_levels, self.oponentSign, self.agentSign, self.defaultSign, withPruning)
-    
+        self.heuristic = gameAlgorithm.game(self.numOfRows, self.numOfCols, self.oponentSign, self.agentSign,
+                                            self.defaultSign)
+        self.miniMax = algorithms.Minimax_Class(self.numOfRows, self.numOfCols, k_levels, self.oponentSign,
+                                                self.agentSign, self.defaultSign)
+        # self.lbl1 = Label(self.canvas, text='Score')
+        # self.lbl1.place(x=50, y=600)
+
     def allBlack(self, event=None):
         if (len(self.canvas.find_withtag("circles")) != 0):
-            self.canvas.scale("circles",0,0,self.wScale,self.hScale)
+            self.canvas.scale("circles", 0, 0, self.wScale, self.hScale)
             return
 
-        for i in range (0, self.numOfRows):
-            for j in range (0, self.numOfCols):
+        for i in range(0, self.numOfRows):
+            for j in range(0, self.numOfCols):
                 self.putCircle(i, j, self.blackColor)
 
     def putCircle(self, row, col, color):
-        marginH = self.canvasHeight/100
-        marginW = self.canvasWidth/150
+        marginH = self.canvasHeight / 100
+        marginW = self.canvasWidth / 150
 
-        x0 = col * (self.canvasWidth // self.numOfCols)+marginW
-        y0 = row * (self.canvasHeight // self.numOfRows)+marginH
-        x1 = (col+1) * (self.canvasWidth // self.numOfCols)-marginW
-        y1 = (row+1) * (self.canvasHeight // self.numOfRows)-marginH
+        x0 = col * (self.canvasWidth // self.numOfCols) + marginW
+        y0 = row * (self.canvasHeight // self.numOfRows) + marginH
+        x1 = (col + 1) * (self.canvasWidth // self.numOfCols) - marginW
+        y1 = (row + 1) * (self.canvasHeight // self.numOfRows) - marginH
         self.canvas.create_oval(x0, y0, x1, y1, fill=color, tag="circles")
 
     def callback(self, event):
         # clickedRow = abs((event.y // (self.canvasHeight // self.numOfRows)))
         clickedCol = event.x // (self.canvasWidth // self.numOfCols)
-        desiredRow = abs(int(self.lastRow[clickedCol])-self.numOfRows+1)
-        if (self.turn):# or not self.turn):
-            if (self.playStep(desiredRow ,clickedCol)):
+        desiredRow = abs(int(self.lastRow[clickedCol]) - self.numOfRows + 1)
+        if (self.turn):  # or not self.turn):
+            if (self.playStep(desiredRow, clickedCol)):
                 # self.heuristic.getHeuristic(self.board, not self.turn)
                 # return
-                start = time.time()
-                states = [(self.board, (-1, -1), self.lastRow)]
-                row, col = self.miniMax.getStep(states)
-                end = time.time()
-                self.elapsedTime += end-start
-                self.expandedNodes += len(states)
+                row, col = self.miniMax.getStep([(self.board, (-1, -1), self.lastRow)])
                 self.playStep(row, col)
 
-
     def playStep(self, row, col):
-        if self.lastRow == self.full:
-            print("Elapsed Time: ")
-            print(self.elapsedTime)
-
-            print("----------------")
-            print("Expanded Nodes: ")
-            print(self.expandedNodes)
-
         if (int(self.lastRow[col]) == self.numOfRows):
             print('----------------------------------------------------------------------')
             print(self.heuristic.getScore(self.board))
+            self.lbl2['text'] = self.heuristic.getScore(self.board)
             return False
-        self.putCircle(row, col, self.colors[self.turn]) # put elzorar fl GUI
-        indx = row * self.numOfCols + col # calculate index in string
-        self.board = self.board[:indx] + self.signs[self.turn] + self.board[indx+1:] # do actual change in string
-        self.turn = not self.turn # switch turn
-        self.lastRow = self.lastRow[0:col] + str(int(self.lastRow[col]) + 1) + self.lastRow[col + 1:] # update last available row in column
+        self.putCircle(row, col, self.colors[self.turn])  # put elzorar fl GUI
+        indx = row * self.numOfCols + col  # calculate index in string
+        self.board = self.board[:indx] + self.signs[self.turn] + self.board[indx + 1:]  # do actual change in string
+        self.turn = not self.turn  # switch turn
+        self.lastRow = self.lastRow[0:col] + str(int(self.lastRow[col]) + 1) + self.lastRow[
+                                                                               col + 1:]  # update last available row in column
         return True
-        
+
     def create_grid(self, event=None):
-        self.wScale = event.width/self.canvasWidth # Get width scalling ratio
-        self.hScale = event.height/self.canvasHeight # Get height scalling ratio
-        self.canvasWidth = self.canvas.winfo_width() # Get current width of canvas
-        self.canvasHeight = self.canvas.winfo_height() # Get current height of canvas
-        
-        self.canvas.delete("grid_line") # Will only remove the grid_line
+        self.wScale = event.width / self.canvasWidth  # Get width scalling ratio
+        self.hScale = event.height / self.canvasHeight  # Get height scalling ratio
+        self.canvasWidth = self.canvas.winfo_width()  # Get current width of canvas
+        self.canvasHeight = self.canvas.winfo_height()  # Get current height of canvas
+
+        self.canvas.delete("grid_line")  # Will only remove the grid_line
 
         # Creates all vertical lines at intevals of 100
-        for i in range(0, self.canvasWidth, int(self.canvasWidth/self.numOfCols)):
+        for i in range(0, self.canvasWidth, int(self.canvasWidth / self.numOfCols)):
             self.canvas.create_line([(i, 0), (i, self.canvasHeight)], tag='grid_line', fill=self.whiteColor)
 
         # Creates all horizontal lines at intevals of 100
-        for i in range(0, self.canvasHeight, int(self.canvasHeight/self.numOfRows)):
+        for i in range(0, self.canvasHeight, int(self.canvasHeight / self.numOfRows)):
             self.canvas.create_line([(0, i), (self.canvasWidth, i)], tag='grid_line', fill=self.whiteColor)
 
         # Put all places empty blacks
