@@ -45,11 +45,11 @@ class Minimax_Class:
                 new_state = state[:]
                 if (is_agent):  # in this step agent is play.
                     new_state = self.replace_char_at_index(new_state, j*self.num_col + i, self.agent)
-                    lastRow = lastRow[0:i] + str(int(lastRow[i]) + 1) + lastRow[i + 1:]
+                    cpLastRow = str(lastRow[0:i] + str(int(lastRow[i]) + 1) + lastRow[i + 1:])
                 else:
                     new_state = self.replace_char_at_index(new_state, j*self.num_col + i, self.opponent)
-                    lastRow = lastRow[0:i] + str(int(lastRow[i]) + 1) + lastRow[i + 1:]
-                children_list.append((new_state,(j,i),lastRow))
+                    cpLastRow = str(lastRow[0:i] + str(int(lastRow[i]) + 1) + lastRow[i + 1:])
+                children_list.append((new_state,(j,i),cpLastRow))
         return children_list
 
     def evaluate(self, state, lastRow, turn):
@@ -62,7 +62,7 @@ class Minimax_Class:
     def getStep(self, states):
         tree1 = {}
         res, row, col = self.minimax(0, 0, True, states, self.k_levels, tree1)
-        self.treePlot.set_tree(tree1)
+        # self.treePlot.set_tree(tree1)
         return row, col
 
     def split_to_line(self, state):
@@ -99,9 +99,9 @@ class Minimax_Class:
                     result_max = max(result_max, temp_max)
                     i,j = states[x][1]
 
-                    alpha = max(temp_max, alpha)
-                    if alpha >= beta:
-                        break
+                    # alpha = max(temp_max, alpha)
+                    # if alpha >= beta:
+                    #     break
 
             return result_max,i,j
         else:
@@ -120,9 +120,9 @@ class Minimax_Class:
                     result_min = min(result_min, temp_min)
                     i,j = states[x][1]
 
-                beta = min(temp_min, beta)
-                if alpha >= beta:
-                    break
+                # beta = min(temp_min, beta)
+                # if alpha >= beta:
+                #     break
 
             return result_min,i,j
 

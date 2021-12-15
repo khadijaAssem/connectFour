@@ -59,14 +59,14 @@ class game:
                     valid, consecOpp = self.countConsecutive(abs(row-self.numOfRows+1), col, 0, 1, not turn) # count consecutive for opponent
                     oppDict[consecOpp] += 1
                     dict[consec] += 1
-        print('From horizontal')
+        # print('From horizontal')
 
-        print(dict)
+        # print(dict)
 
         if (not done):
             dict, subScore = self.fillDict(dict, self.ROW)
             score += subScore - (oppDict[3]*4 + oppDict[4]*100)
-            print(subScore)
+            # print(subScore)
 
         # verticalCheck
         for row in range (0, self.numOfRows-3):
@@ -81,13 +81,13 @@ class game:
                     oppDict[consecOpp] += 1
                     dict[consec] += 1
 
-        print('vertical')
-        print(dict)
+        # print('vertical')
+        # print(dict)
 
         if (not done):
             dict, subScore = self.fillDict(dict, self.COLUMN)
             score += subScore - (oppDict[3]*4 + oppDict[4]*100)
-            print(subScore)
+            # print(subScore)
 
         # ascendingDiagonalCheck 
         for row in range(self.numOfRows-3):
@@ -102,13 +102,13 @@ class game:
                     oppDict[consecOpp] += (1 * validOpp)
                     dict[consec] += (1 * valid)
 
-        print('A diagonal')
-        print(dict)
+        # print('A diagonal')
+        # print(dict)
 
         if (not done):
             dict, subScore = self.fillDict(dict, self.DIAGONAL)
             score += subScore - (oppDict[3]*4 + oppDict[4]*100)
-            print(subScore)
+            # print(subScore)
 
         # descendingDiagonalCheck
         for row in range(3, self.numOfRows):
@@ -123,14 +123,14 @@ class game:
                     oppDict[consecOpp] += (1 * validOpp)
                     dict[consec] += (1 * valid)
 
-        print('B diagonal')
-        print(dict)
+        # print('B diagonal')
+        # print(dict)
         if (not done):
             dict, subScore = self.fillDict(dict, self.DIAGONAL)
             score += subScore - (oppDict[3]*100 + oppDict[4]*100)
-            print(subScore)
+        #     print(subScore)
 
-        print(score)
+        # print(score)
         return score
 
     def fillDict(self ,dict, direction):
@@ -178,8 +178,8 @@ class game:
                     lower_cell = (row + 1) * self.numOfCols + col
                     if self.check_index(lower_cell):
                         if self.board[lower_cell] == self.defaultSign:
-                            print(str(row) + ' ' + str(col) + ' ' + str(abs(int(self.lastRow[col]) - self.numOfRows + 1)) + ' ' + str(lower_cell))
-                            valid_diagonal *= 1/3#abs(abs(int(self.lastRow[col]) - self.numOfRows + 1) - row)
+                            valid_diagonal *= 1/abs(abs(int(self.lastRow[col]) - self.numOfRows + 1) - row)
+
                 row -= deltaRow
                 col += deltaCol
                 continue
