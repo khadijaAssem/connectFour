@@ -1,4 +1,4 @@
-from os import PRIO_PGRP
+
 from tkinter.constants import DISABLED
 
 
@@ -41,8 +41,65 @@ class game:
  
     def getScore(self, board):
         self.board = board
-        return 'Agent ' + str(self.countScore(False, done=True)) + ' human ' + str(self.countScore(True, done=True))
-        
+
+        return 'Agent : ' + str(self.countScore(False, done=True)) + '   VS   human : ' + str(self.countScore(True, done=True))
+
+    def getInstanceScore(self, row, col, board, turn):
+        self.board = board
+        arr_ind = []
+        point = False
+        # horizontal
+        for j in range(max(0, col - 3), min(col + 3, self.numOfCols - 3)):
+            if (abs(j - col) <= 4):
+                valid, consec = self.countConsecutive(row, j, 0, 1, turn, score=True)
+                if (consec == 4):
+                    point = True
+                    arr_ind.append(row);
+                    arr_ind.append(j)
+                    arr_ind.append(row);
+                    arr_ind.append(j + 3)
+
+        # vertical
+        for i in range(0, self.numOfRows - 3):
+            if (abs(i - row) <= 4):
+                valid, consec = self.countConsecutive(abs(i - self.numOfRows + 1), col, 1, 0, turn, score=True)
+                if (consec == 4):
+                    point = True
+                    arr_ind.append(abs(i - self.numOfRows + 1) - 3);
+                    arr_ind.append(col)
+                    arr_ind.append(abs(i - self.numOfRows + 1));
+                    arr_ind.append(col)
+
+        # ascendingDiagonal
+        for i in range(max(0, abs(row - self.numOfRows + 1) - 3), abs(row - self.numOfRows + 1) + 1, +1):
+            deltaRow = abs(i - abs(row - self.numOfRows + 1))
+            if ((col - deltaRow) < self.numOfCols - 3 and (col - deltaRow) <= col and (col - deltaRow) >= 0):
+                valid, consec = self.countConsecutive(abs(i - self.numOfRows + 1), col - deltaRow, 1, 1, turn,
+                                                      score=True)
+                if (consec == 4):
+                    point = True
+                    arr_ind.append(abs(i - self.numOfRows + 1) + 1);
+                    arr_ind.append(col - deltaRow)
+                    arr_ind.append(abs(i - self.numOfRows + 1) - 4);
+                    arr_ind.append(col - deltaRow + 4)
+
+        # descendingDiagonal
+        for i in range(min(self.numOfRows - 1, abs(row - self.numOfRows + 1) + 3),
+                       max(self.numOfRows - 4, abs(row - self.numOfRows + 1) - 4), -1):
+            deltaRow = abs(i - abs(row - self.numOfRows + 1))
+            if ((col - deltaRow) < self.numOfCols - 3 and (col - deltaRow) <= col and (col - deltaRow) >= 0):
+                valid, consec = self.countConsecutive(abs(i - self.numOfRows + 1), (col - deltaRow), -1, 1, turn,
+                                                      score=True)
+                if (consec == 4):
+                    point = True
+                    arr_ind.append(abs(i - self.numOfRows + 1));
+                    arr_ind.append(col - deltaRow)
+                    arr_ind.append(abs(i - self.numOfRows + 1) + 4);
+                    arr_ind.append(col - deltaRow + 4)
+
+        return point, arr_ind
+
+
     def countScore(self, turn, done=False):
         score = 0
         dict = {0:0 ,1:0, 2:0, 3:0, 4:0}
@@ -97,8 +154,8 @@ class game:
                     if (consec == 4):
                         score += 1
                 else:
-                    valid, consec = self.countConsecutive(abs(row-self.numOfRows+1), col, 1, 1, turn, diagonal=True)
-                    validOpp, consecOpp = self.countConsecutive(abs(row-self.numOfRows+1), col, 1, 1, not turn, diagonal=True)
+                    valid, consec = self.countConsecutive(abs(row-self.numOfRows+1), col, 1, 1, turn)
+                    validOpp, consecOpp = self.countConsecutive(abs(row-self.numOfRows+1), col, 1, 1, not turn)
                     oppDict[consecOpp] += (1 * validOpp)
                     dict[consec] += (1 * valid)
 
@@ -118,8 +175,8 @@ class game:
                     if (consec == 4):
                         score += 1
                 else:
-                    valid, consec = self.countConsecutive(abs(row-self.numOfRows+1), col, -1, 1, turn, diagonal=True)
-                    validOpp, consecOpp = self.countConsecutive(abs(row-self.numOfRows+1), col, -1, 1, not turn, diagonal=True)
+                    valid, consec = self.countConsecutive(abs(row-self.numOfRows+1), col, -1, 1, turn)
+                    validOpp, consecOpp = self.countConsecutive(abs(row-self.numOfRows+1), col, -1, 1, not turn)
                     oppDict[consecOpp] += (1 * validOpp)
                     dict[consec] += (1 * valid)
 
@@ -132,6 +189,8 @@ class game:
 
         # print(score)
         return score
+
+
 
     def fillDict(self ,dict, direction):
         subHeuristic = 0
@@ -163,7 +222,7 @@ class game:
     def check_index(self, ind):
         return ind < (self.numOfCols*self.numOfRows)
 
-    def countConsecutive(self, row, col, deltaRow, deltaCol, turn, vertical=False, diagonal=False):
+    def countConsecutive(self, row, col, deltaRow, deltaCol, turn, vertical=False, score=False):
         countScore = 0
         valid_diagonal = 1
         for i in range(4):
@@ -174,7 +233,7 @@ class game:
                 if (vertical):
                     return valid_diagonal, countScore
             if (self.board[indx] == self.defaultSign):
-                if not vertical:
+                if not vertical and not score:
                     lower_cell = (row + 1) * self.numOfCols + col
                     if self.check_index(lower_cell):
                         if self.board[lower_cell] == self.defaultSign:
@@ -187,3 +246,4 @@ class game:
             col += deltaCol
             countScore += 1
         return valid_diagonal, countScore
+
