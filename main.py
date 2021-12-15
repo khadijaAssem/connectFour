@@ -3,8 +3,10 @@ import tkinter as tk
 from tkinter import ttk
 from PIL import ImageTk, Image
 import tkinter.messagebox
+import time
 import gameAlgorithm
 import algorithms
+
 
 import numpy as np
 import time
@@ -58,8 +60,10 @@ class GUI:
         self.numOfCols = numOfCols
         self.k_levels = k_levels
         self.withPruning = withPruning
+        self.full = str(numOfRows)*numOfCols
         self.board = self.defaultSign*(self.numOfRows * self.numOfCols) #[[-1]*self.numOfCols for i in range(self.numOfRows)]
-        
+        self.elapsedTime = 0
+        self.expandedNodes = 0
         self.master = master  # the root object.
         master.title("Connect four")
         self.canvas = Canvas(master, width=self.canvasWidth, height=self.canvasHeight, background=self.backgroundColor, highlightthickness=0)
@@ -67,7 +71,7 @@ class GUI:
         self.canvas.pack(fill=tk.BOTH, expand=True)
         self.canvas.bind('<Configure>', self.create_grid)
         self.heuristic = gameAlgorithm.game(self.numOfRows, self.numOfCols, self.oponentSign, self.agentSign, self.defaultSign)
-        self.miniMax = algorithms.Minimax_Class(self.numOfRows, self.numOfCols, k_levels, self.oponentSign, self.agentSign, self.defaultSign)
+        self.miniMax = algorithms.Minimax_Class(self.numOfRows, self.numOfCols, k_levels, self.oponentSign, self.agentSign, self.defaultSign, withPruning)
     
     def allBlack(self, event=None):
         if (len(self.canvas.find_withtag("circles")) != 0):
@@ -96,11 +100,24 @@ class GUI:
             if (self.playStep(desiredRow ,clickedCol)):
                 # self.heuristic.getHeuristic(self.board, not self.turn)
                 # return
-                row, col = self.miniMax.getStep([(self.board, (-1, -1), self.lastRow)])
+                start = time.time()
+                states = [(self.board, (-1, -1), self.lastRow)]
+                row, col = self.miniMax.getStep(states)
+                end = time.time()
+                self.elapsedTime += end-start
+                self.expandedNodes += len(states)
                 self.playStep(row, col)
 
 
     def playStep(self, row, col):
+        if self.lastRow == self.full:
+            print("Elapsed Time: ")
+            print(self.elapsedTime)
+
+            print("----------------")
+            print("Expanded Nodes: ")
+            print(self.expandedNodes)
+
         if (int(self.lastRow[col]) == self.numOfRows):
             print('----------------------------------------------------------------------')
             print(self.heuristic.getScore(self.board))
