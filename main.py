@@ -92,7 +92,7 @@ class GUI:
         # clickedRow = abs((event.y // (self.canvasHeight // self.numOfRows)))
         clickedCol = event.x // (self.canvasWidth // self.numOfCols)
         desiredRow = abs(int(self.lastRow[clickedCol])-self.numOfRows+1)
-        if (self.turn):
+        if (self.turn):# or not self.turn):
             if (self.playStep(desiredRow ,clickedCol)):
                 # self.heuristic.getHeuristic(self.board, not self.turn)
                 # return
@@ -102,6 +102,7 @@ class GUI:
 
     def playStep(self, row, col):
         if (int(self.lastRow[col]) == self.numOfRows):
+            print('----------------------------------------------------------------------')
             print(self.heuristic.getScore(self.board))
             return False
         self.putCircle(row, col, self.colors[self.turn]) # put elzorar fl GUI

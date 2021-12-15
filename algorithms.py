@@ -1,3 +1,4 @@
+from os import stat
 import tree
 from gameAlgorithm import game
 
@@ -17,6 +18,7 @@ class Minimax_Class:
         self.beta = 10000
         self.k_levels = k_levels
         self.evaluation = game(num_row, num_col, opponent, agent, default)
+        self.treePlot = tree.plot(num_row, num_col)
         return
 
     def replace_char_at_index(self, org_str, index, replacement):
@@ -50,15 +52,17 @@ class Minimax_Class:
                 children_list.append((new_state,(j,i),lastRow))
         return children_list
 
-    def evaluate(self, state, turn):
+    def evaluate(self, state, lastRow, turn):
         # print(turn ,end = ' ')
         # self.printer(state)
-        fn = self.evaluation.getHeuristic(state ,turn)
+        fn = self.evaluation.getHeuristic(state ,turn, lastRow)
         # print(fn)
         return fn
 
     def getStep(self, states):
-        res, row, col = self.minimax(0, 0, True, states, self.k_levels, {})
+        tree1 = {}
+        res, row, col = self.minimax(0, 0, True, states, self.k_levels, tree1)
+        self.treePlot.set_tree(tree1)
         return row, col
 
     def split_to_line(self, state):
@@ -77,7 +81,7 @@ class Minimax_Class:
             beta = self.beta
         # base case : targetDepth reached
         if (current_depth == k_levels):  # call Heuristic
-            return self.evaluate(states[nodeIndex][0], is_max),-1,-1 #states[nodeIndex] Call heuristic with state states[nodeIndex][0]
+            return self.evaluate(states[nodeIndex][0], states[nodeIndex][2], is_max),-1,-1 #states[nodeIndex] Call heuristic with state states[nodeIndex][0]
         i = j = 0
 
         if (is_max):

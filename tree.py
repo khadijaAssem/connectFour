@@ -10,7 +10,7 @@ from tkinter import ttk
 class plot:
 	my_tree = {}
 
-	def __init__(self, num_row=3, num_col=3):
+	def __init__(self, num_row, num_col):
 		# assume index from 0 to < n.
 		self.num_row = num_row
 		self.num_col = num_col

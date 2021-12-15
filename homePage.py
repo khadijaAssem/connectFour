@@ -45,7 +45,6 @@ class MyWindow:
         self.b1 = Button(win, text='Start Game', command=self.start)
         self.b1.place(x=200, y=250)
 
-
     def start(self):
         #self.t3.delete(0, 'end')
         # if self.t1.get()!=" " and self.t1.get()!=" " :
