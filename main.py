@@ -46,7 +46,7 @@ class GUI:
 
     oponentSign = '1'
     agentSign = '0'
-    defaultSign = '2'
+    defaultSign = '*'
     signs = {True: '1', False: '0'}
     colors = {True: greenColor, False: redColor}
     
@@ -65,6 +65,8 @@ class GUI:
         self.canvas = Canvas(master, width=self.canvasWidth, height=self.canvasHeight, background=self.backgroundColor, highlightthickness=0)
         self.canvas.bind("<Button-1>", self.callback)
         self.canvas.pack(fill=tk.BOTH, expand=True)
+        button = Button (master,text='Start Game')#, command=self.start)
+        button.pack()
         self.canvas.bind('<Configure>', self.create_grid)
         self.heuristic = gameAlgorithm.game(self.numOfRows, self.numOfCols, self.oponentSign, self.agentSign, self.defaultSign)
         self.miniMax = algorithms.Minimax_Class(self.numOfRows, self.numOfCols, k_levels, self.oponentSign, self.agentSign, self.defaultSign)
@@ -88,16 +90,32 @@ class GUI:
         y1 = (row+1) * (self.canvasHeight // self.numOfRows)-marginH
         self.canvas.create_oval(x0, y0, x1, y1, fill=color, tag="circles")
 
+    def removeLine(self):
+        self.canvas.delete("pointLine")
+
+    def putLine(self, row1, col1, row2, col2):
+        marginH = self.canvasHeight/100
+        marginW = self.canvasWidth/150
+        x0 = col1 * (self.canvasWidth // self.numOfCols)+marginW
+        y0 = row1 * (self.canvasHeight // self.numOfRows)+marginH
+        x1 = (col2+1) * (self.canvasWidth // self.numOfCols)-marginW
+        y1 = (row2+1) * (self.canvasHeight // self.numOfRows)-marginH
+
+        self.canvas.create_line(x0,y0,x1,y1, fill="yellow", width=5, tag="pointLine")
+        self.master.after(1000, self.removeLine)
+
+
     def callback(self, event):
         # clickedRow = abs((event.y // (self.canvasHeight // self.numOfRows)))
         clickedCol = event.x // (self.canvasWidth // self.numOfCols)
         desiredRow = abs(int(self.lastRow[clickedCol])-self.numOfRows+1)
-        if (self.turn):# or not self.turn):
+        if (self.turn or not self.turn):# or not self.turn):
             if (self.playStep(desiredRow ,clickedCol)):
                 # self.heuristic.getHeuristic(self.board, not self.turn)
                 # return
-                row, col = self.miniMax.getStep([(self.board, (-1, -1), self.lastRow)])
-                self.playStep(row, col)
+                # row, col = self.miniMax.getStep([(self.board, (-1, -1), self.lastRow)])
+                # self.playStep(row, col)
+                return
 
 
     def playStep(self, row, col):
@@ -108,6 +126,13 @@ class GUI:
         self.putCircle(row, col, self.colors[self.turn]) # put elzorar fl GUI
         indx = row * self.numOfCols + col # calculate index in string
         self.board = self.board[:indx] + self.signs[self.turn] + self.board[indx+1:] # do actual change in string
+        point, arrIndx = self.heuristic.getInstanceScore(row, col, self.board, self.turn)
+        if(point):
+            line = 0
+            for i in range(0, int(len(arrIndx)/4)):
+                self.putLine(arrIndx[line+0], arrIndx[line+1], arrIndx[line+2], arrIndx[line+3])
+                line += 4
+
         self.turn = not self.turn # switch turn
         self.lastRow = self.lastRow[0:col] + str(int(self.lastRow[col]) + 1) + self.lastRow[col + 1:] # update last available row in column
         return True
